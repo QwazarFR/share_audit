@@ -53,12 +53,24 @@
 					{{ notice.message }}
 				</NcNoteCard>
 
+				<div class="sad-personal__reviewed-actions sad-personal__reviewed-actions--top">
+					<NcButton type="tertiary" :disabled="busy" @click="toggleReviewed">
+						{{ showReviewed ? t('share_audit_dashboard', 'Hide reviewed') : t('share_audit_dashboard', 'Show reviewed') }}
+					</NcButton>
+					<NcButton v-if="showReviewed" type="tertiary" :disabled="busy" @click="resetReviewed">
+						{{ t('share_audit_dashboard', 'Reset reviewed') }}
+					</NcButton>
+				</div>
+
 				<!-- My alerts -->
 				<section v-if="alerts.length" class="sad-personal__block">
-					<h3>{{ t('share_audit_dashboard', 'Your links that need attention') }}</h3>
+					<div class="sad-personal__block-head">
+						<h3>{{ t('share_audit_dashboard', 'Your links that need attention') }}</h3>
+					</div>
 					<BulkActionBar :count="selectedIds.length"
 						:all-selected="allSelected"
 						:busy="busy"
+						:reviewed-action="showReviewed ? 'unreview' : 'review'"
 						@bulk="onBulk"
 						@toggle-all="toggleAll"
 						@clear="selectedIds = []" />
@@ -140,6 +152,7 @@ import { categoryLabel, permissionLabel, formatDate } from './utils/format.js'
 import {
 	fetchMySummary, fetchMyShares, fetchMyAlerts,
 	setMySharePassword, setMyShareExpiration, revokeMyShare,
+	markMyAlertsReviewed, unmarkMyAlertsReviewed, resetMyReviewedAlerts,
 } from './services/api.js'
 
 // Same Material Design Icons style as StatsCards.vue, kept local since the
@@ -171,6 +184,7 @@ export default {
 			selectedIds: [],
 			generatedPasswords: [],
 			notice: null,
+			showReviewed: false,
 			icons: { total: svg(ICON_TOTAL), alert: svg(ICON_ALERT) },
 		}
 	},
@@ -210,6 +224,26 @@ export default {
 			this.notice = null
 			let ok = 0
 			let failed = 0
+			if (action === 'review' || action === 'unreview') {
+				try {
+					if (action === 'review') {
+						await markMyAlertsReviewed(ids)
+					} else {
+						await unmarkMyAlertsReviewed(ids)
+					}
+					this.notice = {
+						type: 'success',
+						message: t('share_audit_dashboard', '{ok} of {total} alerts updated.', { ok: ids.length, total: ids.length }),
+					}
+					this.selectedIds = []
+					await this.refresh()
+				} catch (e) {
+					this.notice = { type: 'error', message: t('share_audit_dashboard', 'The bulk action could not be completed.') }
+				} finally {
+					this.busy = false
+				}
+				return
+			}
 			for (const id of ids) {
 				try {
 					if (action === 'password') {
@@ -242,11 +276,30 @@ export default {
 		copy(text) {
 			navigator.clipboard?.writeText(text)
 		},
+		toggleReviewed() {
+			this.showReviewed = !this.showReviewed
+			this.selectedIds = []
+			this.refresh()
+		},
+		async resetReviewed() {
+			this.busy = true
+			this.notice = null
+			try {
+				await resetMyReviewedAlerts()
+				this.notice = { type: 'success', message: t('share_audit_dashboard', 'Reviewed alerts reset.') }
+				this.selectedIds = []
+				await this.refresh()
+			} catch (e) {
+				this.notice = { type: 'error', message: t('share_audit_dashboard', 'The action could not be completed.') }
+			} finally {
+				this.busy = false
+			}
+		},
 		async loadAll() {
 			try {
 				const [summary, alerts, shares] = await Promise.all([
 					fetchMySummary(),
-					fetchMyAlerts(),
+					fetchMyAlerts({ showReviewed: this.showReviewed }),
 					fetchMyShares({ limit: 200 }),
 				])
 				this.summary = summary
@@ -262,7 +315,7 @@ export default {
 		async refresh() {
 			const [summary, alerts, shares] = await Promise.all([
 				fetchMySummary(),
-				fetchMyAlerts(),
+				fetchMyAlerts({ showReviewed: this.showReviewed }),
 				fetchMyShares({ limit: 200 }),
 			])
 			this.summary = summary
@@ -275,7 +328,13 @@ export default {
 			this.busy = true
 			this.notice = null
 			try {
-				if (type === 'password') {
+				if (type === 'review') {
+					await markMyAlertsReviewed([id])
+					this.notice = { type: 'success', message: t('share_audit_dashboard', 'Alert marked as reviewed.') }
+				} else if (type === 'unreview') {
+					await unmarkMyAlertsReviewed([id])
+					this.notice = { type: 'success', message: t('share_audit_dashboard', 'Alert unmarked as reviewed.') }
+				} else if (type === 'password') {
 					const res = await setMySharePassword(id)
 					this.generatedPasswords.push({ path, password: res.password })
 				} else if (type === 'expiration') {
@@ -387,6 +446,30 @@ export default {
 .sad-personal__block h3 {
 	font-size: 15px;
 	margin: 0 0 12px;
+}
+
+.sad-personal__block-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.sad-personal__block-head h3 {
+	margin: 0;
+}
+
+.sad-personal__reviewed-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.sad-personal__reviewed-actions--top {
+	justify-content: flex-end;
+	margin-bottom: 12px;
 }
 
 .sad-alerts {

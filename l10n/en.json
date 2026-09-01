@@ -273,6 +273,15 @@
         "Lets every user audit and fix their own shares under Settings → Personal, and see a dashboard widget for links that need attention.": "Lets every user audit and fix their own shares under Settings → Personal, and see a dashboard widget for links that need attention.",
         "Personal view": "Personal view",
         "Risky shares": "Risky shares",
+        "Mark reviewed": "Mark reviewed",
+        "Unmark reviewed": "Unmark reviewed",
+        "Show reviewed": "Show reviewed",
+        "Hide reviewed": "Hide reviewed",
+        "Reset reviewed": "Reset reviewed",
+        "Reviewed alerts reset.": "Reviewed alerts reset.",
+        "Alert marked as reviewed.": "Alert marked as reviewed.",
+        "Alert unmarked as reviewed.": "Alert unmarked as reviewed.",
+        "{ok} of {total} alerts updated.": "{ok} of {total} alerts updated.",
         "None of your shares need attention.": "None of your shares need attention."
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"

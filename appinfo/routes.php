@@ -21,6 +21,9 @@ return [
         ['name' => 'shareApi#index', 'url' => '/api/shares', 'verb' => 'GET'],
         // Security alerts (links without password/expiration, oversharing, sensitive files).
         ['name' => 'shareApi#alerts', 'url' => '/api/alerts', 'verb' => 'GET'],
+        ['name' => 'shareApi#markReviewed', 'url' => '/api/reviewed', 'verb' => 'POST'],
+        ['name' => 'shareApi#unmarkReviewed', 'url' => '/api/reviewed', 'verb' => 'DELETE'],
+        ['name' => 'shareApi#resetReviewed', 'url' => '/api/reviewed/reset', 'verb' => 'POST'],
         // CSV export of the filtered share list.
         ['name' => 'shareApi#export', 'url' => '/api/export', 'verb' => 'GET'],
         // Configurable security-alert rules.
@@ -40,6 +43,9 @@ return [
         ['name' => 'personal#summary', 'url' => '/api/my/summary', 'verb' => 'GET'],
         ['name' => 'personal#shares', 'url' => '/api/my/shares', 'verb' => 'GET'],
         ['name' => 'personal#alerts', 'url' => '/api/my/alerts', 'verb' => 'GET'],
+        ['name' => 'personal#markReviewed', 'url' => '/api/my/reviewed', 'verb' => 'POST'],
+        ['name' => 'personal#unmarkReviewed', 'url' => '/api/my/reviewed', 'verb' => 'DELETE'],
+        ['name' => 'personal#resetReviewed', 'url' => '/api/my/reviewed/reset', 'verb' => 'POST'],
         ['name' => 'personal#setPassword', 'url' => '/api/my/shares/{id}/password', 'verb' => 'POST'],
         ['name' => 'personal#setExpiration', 'url' => '/api/my/shares/{id}/expiration', 'verb' => 'POST'],
         ['name' => 'personal#revoke', 'url' => '/api/my/shares/{id}', 'verb' => 'DELETE'],

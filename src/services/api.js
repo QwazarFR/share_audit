@@ -34,6 +34,21 @@ export async function fetchAlerts(params = {}) {
 	return data
 }
 
+export async function markAlertsReviewed(ids) {
+	const { data } = await axios.post(base('/api/reviewed'), { ids })
+	return data
+}
+
+export async function unmarkAlertsReviewed(ids) {
+	const { data } = await axios.delete(base('/api/reviewed'), { data: { ids } })
+	return data
+}
+
+export async function resetReviewedAlerts() {
+	const { data } = await axios.post(base('/api/reviewed/reset'))
+	return data
+}
+
 /**
  * Download the filtered share list as CSV. Returns the raw axios response so
  * the caller can read the blob body and the Content-Disposition filename.
@@ -120,8 +135,23 @@ export async function fetchMyShares(params = {}) {
 	return data
 }
 
-export async function fetchMyAlerts() {
-	const { data } = await axios.get(base('/api/my/alerts'))
+export async function fetchMyAlerts(params = {}) {
+	const { data } = await axios.get(base('/api/my/alerts'), { params })
+	return data
+}
+
+export async function markMyAlertsReviewed(ids) {
+	const { data } = await axios.post(base('/api/my/reviewed'), { ids })
+	return data
+}
+
+export async function unmarkMyAlertsReviewed(ids) {
+	const { data } = await axios.delete(base('/api/my/reviewed'), { data: { ids } })
+	return data
+}
+
+export async function resetMyReviewedAlerts() {
+	const { data } = await axios.post(base('/api/my/reviewed/reset'))
 	return data
 }
 

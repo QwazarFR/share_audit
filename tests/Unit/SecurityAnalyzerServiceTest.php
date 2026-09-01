@@ -11,6 +11,7 @@ namespace OCA\ShareAuditDashboard\Tests\Unit;
 use OCA\ShareAuditDashboard\Db\ShareMapper;
 use OCA\ShareAuditDashboard\Service\DisplayNameResolver;
 use OCA\ShareAuditDashboard\Service\PathFormatter;
+use OCA\ShareAuditDashboard\Service\ReviewedShareService;
 use OCA\ShareAuditDashboard\Service\SecurityAnalyzerService;
 use OCA\ShareAuditDashboard\Service\SettingsService;
 use OCP\ICacheFactory;
@@ -33,6 +34,7 @@ class SecurityAnalyzerServiceTest extends TestCase {
     private SettingsService&MockObject $settings;
     private IGroupManager&MockObject $groupManager;
     private DisplayNameResolver&MockObject $displayNames;
+    private ReviewedShareService&MockObject $reviewedShares;
     private ArrayCache $cache;
 
     protected function setUp(): void {
@@ -50,6 +52,8 @@ class SecurityAnalyzerServiceTest extends TestCase {
         // return type), which is a safe default — buildAlert()'s consumer
         // falls back to the raw uid. Tests that care configure it themselves.
         $this->displayNames = $this->createMock(DisplayNameResolver::class);
+        $this->reviewedShares = $this->createMock(ReviewedShareService::class);
+        $this->reviewedShares->method('annotate')->willReturnCallback(static fn (array $alerts) => $alerts);
 
         $this->cache = new ArrayCache();
     }
@@ -86,6 +90,7 @@ class SecurityAnalyzerServiceTest extends TestCase {
             new PathFormatter(),
             $this->groupManager,
             $this->displayNames,
+            $this->reviewedShares,
             $cacheFactory,
         );
     }

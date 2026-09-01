@@ -171,11 +171,11 @@ class ShareApiController extends AdminController {
      * 'created' re-sorts by share creation date instead, direction per
      * $sortDir — lets an admin triage the oldest risky shares first.
      */
-    public function alerts(int $page = 1, int $limit = 25, string $issue = '', string $sort = 'severity', string $sortDir = 'desc'): JSONResponse {
+    public function alerts(int $page = 1, int $limit = 25, string $issue = '', string $sort = 'severity', string $sortDir = 'desc', bool $showReviewed = false): JSONResponse {
         if (($guard = $this->requireAdmin()) !== null) {
             return $guard;
         }
-        $all = $this->security->getAlerts();
+        $all = $this->security->getAlerts(null, $showReviewed);
         $breakdown = $this->security->countByIssue($all);
         $filtered = $issue !== ''
             ? array_values(array_filter($all, static fn ($alert) => in_array($issue, array_column($alert['issues'], 'code'), true)))
@@ -197,6 +197,40 @@ class ShareApiController extends AdminController {
             'limit' => $limit,
             'breakdown' => $breakdown,
         ]);
+    }
+
+    /**
+     * POST /api/reviewed — mark selected current alerts as reviewed.
+     *
+     * @param int[] $ids
+     */
+    public function markReviewed(array $ids = []): JSONResponse {
+        if (($guard = $this->requireAdmin()) !== null) {
+            return $guard;
+        }
+        return new JSONResponse(['marked' => $this->security->markReviewed($ids, null, $this->currentUid())]);
+    }
+
+    /**
+     * DELETE /api/reviewed — unmark selected current alerts.
+     *
+     * @param int[] $ids
+     */
+    public function unmarkReviewed(array $ids = []): JSONResponse {
+        if (($guard = $this->requireAdmin()) !== null) {
+            return $guard;
+        }
+        return new JSONResponse(['unmarked' => $this->security->unmarkReviewed($ids)]);
+    }
+
+    /**
+     * POST /api/reviewed/reset — clear all admin reviewed state.
+     */
+    public function resetReviewed(): JSONResponse {
+        if (($guard = $this->requireAdmin()) !== null) {
+            return $guard;
+        }
+        return new JSONResponse(['reset' => $this->security->resetReviewed()]);
     }
 
     /**

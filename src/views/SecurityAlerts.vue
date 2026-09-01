@@ -38,6 +38,15 @@
 				{{ notice.message }}
 			</NcNoteCard>
 
+			<div class="sad-reviewed-controls">
+				<NcButton type="tertiary" :disabled="busy" @click="toggleReviewed">
+					{{ showReviewed ? t('share_audit_dashboard', 'Hide reviewed') : t('share_audit_dashboard', 'Show reviewed') }}
+				</NcButton>
+				<NcButton v-if="showReviewed" type="tertiary" :disabled="busy" @click="resetReviewed">
+					{{ t('share_audit_dashboard', 'Reset reviewed') }}
+				</NcButton>
+			</div>
+
 			<NcEmptyContent v-if="items.length === 0 && !activeIssue"
 				:name="t('share_audit_dashboard', 'All clear')"
 				:description="t('share_audit_dashboard', 'No insecure public links were found.')">
@@ -74,6 +83,7 @@
 					<BulkActionBar :count="selectedIds.length"
 						:all-selected="allSelected"
 						:busy="busy"
+						:reviewed-action="showReviewed ? 'unreview' : 'review'"
 						@bulk="onBulk"
 						@toggle-all="toggleAll"
 						@clear="selectedIds = []">
@@ -135,6 +145,7 @@ import PageSizeSelect from '../components/PageSizeSelect.vue'
 import { issueLabel } from '../utils/format.js'
 import {
 	fetchAlerts, setSharePassword, setShareExpiration, revokeShare, bulkShareAction,
+	markAlertsReviewed, unmarkAlertsReviewed, resetReviewedAlerts,
 } from '../services/api.js'
 
 // Must match ShareActionController::BULK_MAX_IDS — larger selections ("Select
@@ -181,6 +192,7 @@ export default {
 			selectedIds: [],
 			generatedPasswords: [],
 			notice: null,
+			showReviewed: false,
 			// Issue code (e.g. 'no_password') the list is currently restricted
 			// to, set by clicking a bar in the "Alerts by category" chart.
 			// '' means no filter.
@@ -259,7 +271,7 @@ export default {
 		n,
 		async load() {
 			try {
-				const data = await fetchAlerts({ page: this.page, limit: this.apiLimit, issue: this.activeIssue, sort: this.apiSort, sortDir: this.apiSortDir })
+				const data = await fetchAlerts({ page: this.page, limit: this.apiLimit, issue: this.activeIssue, sort: this.apiSort, sortDir: this.apiSortDir, showReviewed: this.showReviewed })
 				this.items = data.items
 				this.breakdown = data.breakdown ?? {}
 				this.total = data.total ?? this.items.length
@@ -315,11 +327,37 @@ export default {
 		copy(text) {
 			navigator.clipboard?.writeText(text)
 		},
+		toggleReviewed() {
+			this.showReviewed = !this.showReviewed
+			this.page = 1
+			this.selectedIds = []
+			this.load()
+		},
+		async resetReviewed() {
+			this.busy = true
+			this.notice = null
+			try {
+				await resetReviewedAlerts()
+				this.notice = { type: 'success', message: t('share_audit_dashboard', 'Reviewed alerts reset.') }
+				this.selectedIds = []
+				await this.load()
+			} catch (e) {
+				this.notice = { type: 'error', message: t('share_audit_dashboard', 'The action could not be completed.') }
+			} finally {
+				this.busy = false
+			}
+		},
 		async onCardAction({ type, id, days, path }) {
 			this.busy = true
 			this.notice = null
 			try {
-				if (type === 'password') {
+				if (type === 'review') {
+					await markAlertsReviewed([id])
+					this.notice = { type: 'success', message: t('share_audit_dashboard', 'Alert marked as reviewed.') }
+				} else if (type === 'unreview') {
+					await unmarkAlertsReviewed([id])
+					this.notice = { type: 'success', message: t('share_audit_dashboard', 'Alert unmarked as reviewed.') }
+				} else if (type === 'password') {
 					const res = await setSharePassword(id)
 					this.generatedPasswords.push({ path, password: res.password })
 				} else if (type === 'expiration') {
@@ -344,6 +382,21 @@ export default {
 			this.busy = true
 			this.notice = null
 			try {
+				if (action === 'review' || action === 'unreview') {
+					const ids = [...this.selectedIds]
+					if (action === 'review') {
+						await markAlertsReviewed(ids)
+					} else {
+						await unmarkAlertsReviewed(ids)
+					}
+					this.notice = {
+						type: 'success',
+						message: t('share_audit_dashboard', '{ok} of {total} alerts updated.', { ok: ids.length, total: ids.length }),
+					}
+					this.selectedIds = []
+					await this.load()
+					return
+				}
 				let succeeded = 0
 				let failed = 0
 				let total = 0
@@ -432,6 +485,14 @@ export default {
 }
 
 .sad-action-notice {
+	margin-bottom: 12px;
+}
+
+.sad-reviewed-controls {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
 	margin-bottom: 12px;
 }
 

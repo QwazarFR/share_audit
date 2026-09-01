@@ -226,6 +226,15 @@ OC.L10N.register(
     "Lets every user audit and fix their own shares under Settings → Personal, and see a dashboard widget for links that need attention." : "Permite que cada utilizador audite e corrija as suas próprias partilhas em Definições → Pessoal, e veja um widget no painel com as hiperligações que precisam de atenção.",
     "Personal view" : "Vista pessoal",
     "Risky shares" : "Partilhas de risco",
+    "Mark reviewed" : "Marcar como revista",
+    "Unmark reviewed" : "Remover marca de revista",
+    "Show reviewed" : "Mostrar revistas",
+    "Hide reviewed" : "Ocultar revistas",
+    "Reset reviewed" : "Repor revistas",
+    "Reviewed alerts reset." : "Alertas revistas repostas.",
+    "Alert marked as reviewed." : "Alerta marcada como revista.",
+    "Alert unmarked as reviewed." : "Alerta desmarcada como revista.",
+    "{ok} of {total} alerts updated." : "{ok} de {total} alertas atualizados.",
     "None of your shares need attention." : "Nenhuma das suas partilhas precisa de atenção."
 },
 "nplurals=2; plural=(n != 1);");

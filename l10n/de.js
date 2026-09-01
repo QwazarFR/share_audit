@@ -226,6 +226,15 @@ OC.L10N.register(
     "Lets every user audit and fix their own shares under Settings → Personal, and see a dashboard widget for links that need attention." : "Ermöglicht jedem Benutzer, die eigenen Freigaben unter Einstellungen → Persönlich zu prüfen und zu korrigieren, sowie ein Dashboard-Widget für Links zu sehen, die Aufmerksamkeit benötigen.",
     "Personal view" : "Persönliche Ansicht",
     "Risky shares" : "Riskante Freigaben",
+    "Mark reviewed" : "Als geprüft markieren",
+    "Unmark reviewed" : "Prüfmarkierung entfernen",
+    "Show reviewed" : "Geprüfte anzeigen",
+    "Hide reviewed" : "Geprüfte ausblenden",
+    "Reset reviewed" : "Geprüfte zurücksetzen",
+    "Reviewed alerts reset." : "Geprüfte Warnungen wurden zurückgesetzt.",
+    "Alert marked as reviewed." : "Warnung als geprüft markiert.",
+    "Alert unmarked as reviewed." : "Prüfmarkierung der Warnung entfernt.",
+    "{ok} of {total} alerts updated." : "{ok} von {total} Warnungen aktualisiert.",
     "None of your shares need attention." : "Keine Ihrer Freigaben benötigt Aufmerksamkeit."
 },
 "nplurals=2; plural=(n != 1);");

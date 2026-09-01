@@ -16,6 +16,13 @@
 
 		<div class="sad-bulkbar__right">
 			<div v-if="count" class="sad-bulkbar__actions">
+				<NcButton v-if="reviewedAction"
+					type="tertiary"
+					:disabled="busy"
+					@click="$emit('bulk', { action: reviewedAction })">
+					{{ reviewedAction === 'unreview' ? t('share_audit_dashboard', 'Unmark reviewed') : t('share_audit_dashboard', 'Mark reviewed') }}
+				</NcButton>
+
 				<NcButton :disabled="busy" @click="$emit('bulk', { action: 'password' })">
 					{{ t('share_audit_dashboard', 'Add password') }}
 				</NcButton>
@@ -72,6 +79,10 @@ export default {
 		busy: {
 			type: Boolean,
 			default: false,
+		},
+		reviewedAction: {
+			type: String,
+			default: '',
 		},
 	},
 	emits: ['bulk', 'clear', 'toggle-all'],

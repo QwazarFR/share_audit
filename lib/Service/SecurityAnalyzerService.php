@@ -59,6 +59,7 @@ class SecurityAnalyzerService {
         private PathFormatter $pathFormatter,
         private IGroupManager $groupManager,
         private DisplayNameResolver $displayNames,
+        private ReviewedShareService $reviewedShares,
         ICacheFactory $cacheFactory,
     ) {
         $this->cache = $cacheFactory->createDistributed('share_audit_dashboard-alerts');
@@ -67,27 +68,11 @@ class SecurityAnalyzerService {
 
     /**
      * Number of shares flagged as insecure (used for dashboard badges).
-     * Link-based rules are computed directly in SQL — see
-     * ShareMapper::countInsecureLinks() — so badges don't pay the cost of
-     * normalizing every alert just for a count; group_share_editable can't
-     * take that shortcut (member counts aren't in oc_share) and reuses the
-     * same row-filtering as getAlerts(), just without building full alert
-     * records — cheap in practice since group shares are a small slice of
-     * the share table.
+     * Uses the same reviewed-state filtering as getAlerts() so badges match
+     * the actionable alert queue, not the raw count of risky shares.
      */
     public function countAlerts(?string $owner = null): int {
-        $count = $this->mapper->countInsecureLinks(
-            $this->settings->isRuleEnabled('no_password'),
-            $this->settings->isRuleEnabled('no_expiration'),
-            $this->settings->isRuleEnabled('sensitive_file'),
-            $this->settings->getSensitiveExtensions(),
-            $owner,
-            $this->expiringSoonCutoff(),
-        );
-        if ($this->settings->isRuleEnabled('group_share_editable')) {
-            $count += count($this->riskyGroupShareRows($owner));
-        }
-        return $count;
+        return count($this->getAlerts($owner));
     }
 
     /**
@@ -97,15 +82,41 @@ class SecurityAnalyzerService {
      *
      * @return array<int, array<string, mixed>>
      */
-    public function getAlerts(?string $owner = null): array {
+    public function getAlerts(?string $owner = null, bool $showReviewed = false): array {
         $cacheKey = $owner ?? '__admin__';
         $cached = $this->cache->get($cacheKey);
-        if (is_array($cached)) {
-            return $cached;
+        $alerts = is_array($cached) ? $cached : null;
+        if ($alerts === null) {
+            $alerts = $this->computeAlerts($owner);
+            $this->cache->set($cacheKey, $alerts, self::CACHE_TTL);
         }
-        $alerts = $this->computeAlerts($owner);
-        $this->cache->set($cacheKey, $alerts, self::CACHE_TTL);
-        return $alerts;
+        return $this->reviewedShares->annotate($alerts, $this->scopeFor($owner), $showReviewed);
+    }
+
+    /**
+     * @param int[] $ids
+     */
+    public function markReviewed(array $ids, ?string $owner = null, ?string $actor = null): int {
+        $alerts = $this->alertsByIds($ids, $owner);
+        $count = $this->reviewedShares->markAlerts($this->scopeFor($owner), $alerts, $actor);
+        $this->invalidate($owner);
+        return $count;
+    }
+
+    /**
+     * @param int[] $ids
+     */
+    public function unmarkReviewed(array $ids, ?string $owner = null): int {
+        $alerts = $this->alertsByIds($ids, $owner);
+        $count = $this->reviewedShares->unmarkAlerts($this->scopeFor($owner), $alerts);
+        $this->invalidate($owner);
+        return $count;
+    }
+
+    public function resetReviewed(?string $owner = null): int {
+        $count = $this->reviewedShares->reset($this->scopeFor($owner));
+        $this->invalidate($owner);
+        return $count;
     }
 
     /**
@@ -175,10 +186,14 @@ class SecurityAnalyzerService {
             'id' => (int)$row['id'],
             'shareType' => (int)($row['share_type'] ?? 0),
             'owner' => (string)$row['uid_owner'],
+            'initiator' => (string)($row['uid_initiator'] ?? ''),
             'fileId' => isset($row['file_source']) ? (int)$row['file_source'] : null,
             'path' => $this->pathFormatter->prettyPath($row['file_path'] ?? null),
             'token' => $token,
             'created' => isset($row['stime']) ? (int)$row['stime'] : null,
+            'permissions' => (int)($row['permissions'] ?? 0),
+            'hasPassword' => !empty($row['password']),
+            'expiration' => $row['expiration'] ?? null,
             'issues' => $issues,
             'severity' => $this->maxSeverity($issues),
         ];
@@ -187,8 +202,7 @@ class SecurityAnalyzerService {
     /**
      * Group shares that grant edit/reshare permission to a group with at
      * least SettingsService::getGroupShareMinMembers() members — the
-     * candidate pool for the group_share_editable rule. Reused by both
-     * getAlerts() (full records) and countAlerts() (just the count).
+     * candidate pool for the group_share_editable rule.
      *
      * @return array<int, array<string, mixed>> rows annotated with `_memberCount`
      */
@@ -247,6 +261,22 @@ class SecurityAnalyzerService {
             }
         }
         return $counts;
+    }
+
+    private function scopeFor(?string $owner): string {
+        return $owner === null ? ReviewedShareService::ADMIN_SCOPE : $this->reviewedShares->personalScope($owner);
+    }
+
+    /**
+     * @param int[] $ids
+     * @return array<int, array<string, mixed>>
+     */
+    private function alertsByIds(array $ids, ?string $owner): array {
+        $wanted = array_fill_keys(array_map('intval', $ids), true);
+        return array_values(array_filter(
+            $this->getAlerts($owner, true),
+            static fn (array $alert): bool => isset($wanted[(int)$alert['id']]),
+        ));
     }
 
     /**

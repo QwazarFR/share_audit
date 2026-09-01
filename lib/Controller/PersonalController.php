@@ -83,12 +83,55 @@ class PersonalController extends Controller {
      */
     #[NoAdminRequired]
     #[UserRateLimit(limit: 30, period: 60)]
-    public function alerts(): JSONResponse {
+    public function alerts(bool $showReviewed = false): JSONResponse {
         $uid = $this->uid();
         if ($uid === null) {
             return $this->unauthenticated();
         }
-        return new JSONResponse(['items' => $this->security->getAlerts($uid)]);
+        return new JSONResponse(['items' => $this->security->getAlerts($uid, $showReviewed)]);
+    }
+
+    /**
+     * POST /api/my/reviewed — mark selected personal alerts as reviewed.
+     *
+     * @param int[] $ids
+     */
+    #[NoAdminRequired]
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function markReviewed(array $ids = []): JSONResponse {
+        $uid = $this->uid();
+        if ($uid === null) {
+            return $this->unauthenticated();
+        }
+        return new JSONResponse(['marked' => $this->security->markReviewed($ids, $uid, $uid)]);
+    }
+
+    /**
+     * DELETE /api/my/reviewed — unmark selected personal alerts.
+     *
+     * @param int[] $ids
+     */
+    #[NoAdminRequired]
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function unmarkReviewed(array $ids = []): JSONResponse {
+        $uid = $this->uid();
+        if ($uid === null) {
+            return $this->unauthenticated();
+        }
+        return new JSONResponse(['unmarked' => $this->security->unmarkReviewed($ids, $uid)]);
+    }
+
+    /**
+     * POST /api/my/reviewed/reset — clear current user's reviewed state.
+     */
+    #[NoAdminRequired]
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function resetReviewed(): JSONResponse {
+        $uid = $this->uid();
+        if ($uid === null) {
+            return $this->unauthenticated();
+        }
+        return new JSONResponse(['reset' => $this->security->resetReviewed($uid)]);
     }
 
     /**

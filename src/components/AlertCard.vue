@@ -43,6 +43,12 @@
 		</div>
 
 		<div class="sad-alert__actions">
+			<NcButton type="tertiary"
+				:disabled="busy"
+				@click="$emit('action', { type: alert.reviewed ? 'unreview' : 'review', id: alert.id, path: alert.path })">
+				{{ alert.reviewed ? t('share_audit_dashboard', 'Unmark reviewed') : t('share_audit_dashboard', 'Mark reviewed') }}
+			</NcButton>
+
 			<NcButton v-if="alert.token" type="tertiary" :disabled="busy" @click="copyLink">
 				{{ linkCopied ? t('share_audit_dashboard', 'Copied!') : t('share_audit_dashboard', 'Copy link') }}
 			</NcButton>

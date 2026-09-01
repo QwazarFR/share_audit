@@ -45,4 +45,8 @@ abstract class AdminController extends Controller {
         }
         return null;
     }
+
+    protected function currentUid(): ?string {
+        return $this->userSession->getUser()?->getUID();
+    }
 }
