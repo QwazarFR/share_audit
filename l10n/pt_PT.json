@@ -273,7 +273,9 @@
         "Lets every user audit and fix their own shares under Settings → Personal, and see a dashboard widget for links that need attention.": "Permite que cada utilizador audite e corrija as suas próprias partilhas em Definições → Pessoal, e veja um widget no painel com as hiperligações que precisam de atenção.",
         "Personal view": "Vista pessoal",
         "Risky shares": "Partilhas de risco",
-        "None of your shares need attention.": "Nenhuma das suas partilhas precisa de atenção."
+        "None of your shares need attention.": "Nenhuma das suas partilhas precisa de atenção.",
+        "Pagination": "Paginação",
+        "Go to page": "Ir para a página"
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"
 }

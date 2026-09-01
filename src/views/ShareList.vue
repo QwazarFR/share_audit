@@ -59,27 +59,18 @@
 
 		<div v-else class="sad-pagination">
 			<span class="sad-pagination__range">{{ rangeLabel }}</span>
-			<div class="sad-pagination__controls">
-				<NcButton :disabled="page <= 1" @click="goto(page - 1)">
-					{{ t('share_audit_dashboard', 'Previous') }}
-				</NcButton>
-				<span class="sad-pagination__page">
-					{{ n('share_audit_dashboard', 'Page %n', 'Page %n', page) }} / {{ totalPages }}
-				</span>
-				<NcButton :disabled="page >= totalPages" @click="goto(page + 1)">
-					{{ t('share_audit_dashboard', 'Next') }}
-				</NcButton>
-			</div>
+			<PageNavigation :page="page" :total-pages="totalPages" @change="goto" />
 		</div>
 	</div>
 </template>
 
 <script>
-import { translate as t, translatePlural as n } from '@nextcloud/l10n'
+import { translate as t } from '@nextcloud/l10n'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import PageNavigation from '../components/PageNavigation.vue'
 import PageSizeSelect from '../components/PageSizeSelect.vue'
 import ShareTable from '../components/ShareTable.vue'
 import { fetchShares, exportShares } from '../services/api.js'
@@ -91,6 +82,7 @@ export default {
 		NcCheckboxRadioSwitch,
 		NcLoadingIcon,
 		NcNoteCard,
+		PageNavigation,
 		PageSizeSelect,
 		ShareTable,
 	},
@@ -158,7 +150,6 @@ export default {
 	},
 	methods: {
 		t,
-		n,
 		onFilter(filters) {
 			this.filters = filters
 			this.page = 1
@@ -275,13 +266,6 @@ export default {
 	margin-top: 16px;
 }
 
-.sad-pagination__controls {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.sad-pagination__page,
 .sad-pagination__range {
 	color: var(--color-text-maxcontrast);
 	font-size: 13px;

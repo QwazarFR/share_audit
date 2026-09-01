@@ -226,6 +226,8 @@ OC.L10N.register(
     "Lets every user audit and fix their own shares under Settings → Personal, and see a dashboard widget for links that need attention." : "Lets every user audit and fix their own shares under Settings → Personal, and see a dashboard widget for links that need attention.",
     "Personal view" : "Personal view",
     "Risky shares" : "Risky shares",
-    "None of your shares need attention." : "None of your shares need attention."
+    "None of your shares need attention." : "None of your shares need attention.",
+    "Pagination" : "Pagination",
+    "Go to page" : "Go to page"
 },
 "nplurals=2; plural=(n != 1);");

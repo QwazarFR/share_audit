@@ -104,17 +104,7 @@
 
 					<div v-if="!isAll && total > apiLimit" class="sad-pagination">
 						<span class="sad-pagination__range">{{ rangeLabel }}</span>
-						<div class="sad-pagination__controls">
-							<NcButton :disabled="busy || page <= 1" @click="goto(page - 1)">
-								{{ t('share_audit_dashboard', 'Previous') }}
-							</NcButton>
-							<span class="sad-pagination__page">
-								{{ n('share_audit_dashboard', 'Page %n', 'Page %n', page) }} / {{ totalPages }}
-							</span>
-							<NcButton :disabled="busy || page >= totalPages" @click="goto(page + 1)">
-								{{ t('share_audit_dashboard', 'Next') }}
-							</NcButton>
-						</div>
+						<PageNavigation :page="page" :total-pages="totalPages" :disabled="busy" @change="goto" />
 					</div>
 				</template>
 			</template>
@@ -131,6 +121,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import AlertCard from '../components/AlertCard.vue'
 import BulkActionBar from '../components/BulkActionBar.vue'
 import HBarChart from '../components/HBarChart.vue'
+import PageNavigation from '../components/PageNavigation.vue'
 import PageSizeSelect from '../components/PageSizeSelect.vue'
 import { issueLabel } from '../utils/format.js'
 import {
@@ -152,6 +143,7 @@ export default {
 		AlertCard,
 		BulkActionBar,
 		HBarChart,
+		PageNavigation,
 		PageSizeSelect,
 	},
 	emits: ['alerts-count'],
@@ -444,13 +436,6 @@ export default {
 	margin-top: 16px;
 }
 
-.sad-pagination__controls {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.sad-pagination__page,
 .sad-pagination__range {
 	color: var(--color-text-maxcontrast);
 	font-size: 13px;

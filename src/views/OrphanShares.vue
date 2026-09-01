@@ -108,15 +108,11 @@
 
 			<div class="sad-pagination">
 				<span class="sad-pagination__info">{{ rangeLabel }}</span>
-				<div v-if="!isAll && total > apiLimit" class="sad-pagination__controls">
-					<NcButton :disabled="page <= 1" @click="goto(page - 1)">
-						{{ t('share_audit_dashboard', 'Previous') }}
-					</NcButton>
-					<span class="sad-pagination__page">{{ page }} / {{ totalPages }}</span>
-					<NcButton :disabled="page >= totalPages" @click="goto(page + 1)">
-						{{ t('share_audit_dashboard', 'Next') }}
-					</NcButton>
-				</div>
+				<PageNavigation v-if="!isAll && total > apiLimit"
+					:page="page"
+					:total-pages="totalPages"
+					:disabled="revoking"
+					@change="goto" />
 			</div>
 		</template>
 	</div>
@@ -130,6 +126,7 @@ import NcChip from '@nextcloud/vue/components/NcChip'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import PageNavigation from '../components/PageNavigation.vue'
 import PageSizeSelect from '../components/PageSizeSelect.vue'
 import { categoryLabel, permissionLabel, formatDate } from '../utils/format.js'
 import { fetchOrphans, revokeOrphans } from '../services/api.js'
@@ -147,6 +144,7 @@ export default {
 		NcEmptyContent,
 		NcLoadingIcon,
 		NcNoteCard,
+		PageNavigation,
 		PageSizeSelect,
 	},
 	emits: ['orphan-count'],
@@ -422,14 +420,7 @@ export default {
 	margin-top: 16px;
 }
 
-.sad-pagination__controls {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.sad-pagination__info,
-.sad-pagination__page {
+.sad-pagination__info {
 	color: var(--color-text-maxcontrast);
 	font-size: 13px;
 }
