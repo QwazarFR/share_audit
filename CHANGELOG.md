@@ -18,6 +18,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   and Lookup & Orphans views have something to show immediately. See the
   README for the link.
 
+### Fixed
+- **Soft-delete failed for user shares** (`share_type` 0), the most common
+  share type: it silently never landed in the recycle bin — the share was
+  still deleted, only the safety-net copy was lost, with no visible error at
+  the time. Caused by the retention entity's zero-value defaults matching
+  real values (`share_type` 0, `permissions` 0, an empty owner) closely
+  enough that Nextcloud's own change-tracking treated setting them as a
+  no-op and omitted the column from the database insert. Thanks
+  [@dauni](https://github.com/dauni) for the precise diagnosis
+  ([#15](https://github.com/kreotropic/share_audit/issues/15)).
+- **Generating a password for a public link could fail** ("The action could
+  not be completed.") on instances where the `password_policy` app enforces
+  a minimum password length longer than this app's own 14-character
+  default. The generator now generates at least as many characters as the
+  instance's configured policy requires. Thanks
+  [@michel-thomas](https://github.com/michel-thomas)
+  ([#9](https://github.com/kreotropic/share_audit/issues/9)).
+
 ### Documentation
 - Documented a known ARM64 + PHP JIT segfault (opcache tracing JIT) some
   users hit on enabling the app, with the `opcache.jit=0` mitigation. This

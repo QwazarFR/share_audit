@@ -17,23 +17,34 @@ use OCP\AppFramework\Db\Entity;
  * to the snake_case columns created by Migration\Version0004Date... .
  */
 class DeletedShare extends Entity {
-    protected int $originalShareId = 0;
-    protected int $shareType = 0;
+    // NOT NULL DB columns (see the migration) whose PHP defaults are
+    // deliberately nullable rather than a valid domain value (0, ''): the
+    // Entity setter only marks a field "updated" — and so included in the
+    // QBMapper::insert() column list — when the new value differs from the
+    // current one. A domain-valid default (e.g. 0, which is also the real
+    // share_type for a user share) makes setShareType(0) a no-op as far as
+    // dirty-tracking is concerned, so the column is silently omitted from
+    // the INSERT and the DB rejects it as missing a NOT NULL value with no
+    // default. Every one of these fields is unconditionally set in both
+    // SoftDeleteService::captureShare()/captureRow() before insert(), so a
+    // null default here never reaches the database.
+    protected ?int $originalShareId = null;
+    protected ?int $shareType = null;
     protected ?string $shareWith = null;
-    protected string $uidOwner = '';
+    protected ?string $uidOwner = null;
     protected ?string $uidInitiator = null;
-    protected string $itemType = '';
+    protected ?string $itemType = null;
     protected ?int $fileSource = null;
     protected ?string $fileTarget = null;
-    protected int $permissions = 0;
+    protected ?int $permissions = null;
     protected ?string $token = null;
     protected ?string $password = null;
     protected ?string $shareName = null;
     protected ?string $expiration = null;
     protected ?int $stime = null;
-    protected int $deletedAt = 0;
+    protected ?int $deletedAt = null;
     protected ?string $deletedBy = null;
-    protected int $purgeAfter = 0;
+    protected ?int $purgeAfter = null;
 
     public function __construct() {
         $this->addType('originalShareId', 'integer');
