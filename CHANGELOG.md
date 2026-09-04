@@ -8,6 +8,22 @@
 All notable changes to Share Audit Dashboard are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.0]
+
+### Added
+- **German and Spanish** translations of the whole interface.
+- **Try it in Nextcloud Playground** — a one-click, browser-only demo
+  instance (no install required) with Share Audit Dashboard pre-installed
+  and a handful of shares already seeded, so the Dashboard, Security alerts
+  and Lookup & Orphans views have something to show immediately. See the
+  README for the link.
+
+### Documentation
+- Documented a known ARM64 + PHP JIT segfault (opcache tracing JIT) some
+  users hit on enabling the app, with the `opcache.jit=0` mitigation. This
+  is a PHP/Zend JIT compiler issue on its ARM64 backend, not an app bug —
+  see [#3](https://github.com/kreotropic/share_audit/issues/3).
+
 ## [0.4.0]
 
 ### Added
@@ -21,7 +37,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   permanently, individually or in bulk. A daily background job purges
   expired entries. This is the app's first database migration.
 - **Nextcloud 34 support** (`max-version` raised from 33 to 34).
-- **German and Spanish** translations of the whole interface.
 
 ### Fixed
 - **Sort order is now deterministic across MySQL/MariaDB and PostgreSQL.**
