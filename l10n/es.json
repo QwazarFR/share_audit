@@ -273,7 +273,9 @@
         "Lets every user audit and fix their own shares under Settings → Personal, and see a dashboard widget for links that need attention.": "Permite que cada usuario audite y corrija sus propios recursos compartidos en Ajustes → Personal, y vea un widget en el panel con los enlaces que necesitan atención.",
         "Personal view": "Vista personal",
         "Risky shares": "Recursos compartidos de riesgo",
-        "None of your shares need attention.": "Ninguno de sus recursos compartidos necesita atención."
+        "None of your shares need attention.": "Ninguno de sus recursos compartidos necesita atención.",
+        "Pagination": "Paginación",
+        "Go to page": "Ir a la página"
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"
 }
